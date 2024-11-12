@@ -1,0 +1,73 @@
+option:
+
+  __schemas:
+    all: OptionSchema
+
+  key:
+    mandatory: True
+    type: str
+
+  value:
+    mandatory: True
+    type: str
+
+
+
+tenant:
+
+  __schemas:
+    all: TenantSchema
+
+  id:
+    mandatory: False
+    type: uuid.UUID
+
+  code:
+    mandatory: True
+    type: str
+
+  display_name:
+    mandatory: True
+    type: str
+
+user:
+
+  __schemas:
+    all: UserSchema
+
+  tenant_id:
+    mandatory: False
+    type: uuid.UUID
+
+  username:
+    mandatory: False
+    type: str
+
+  password:
+    mandatory: False
+    type: str
+
+  display_name:
+    mandatory: False
+    type: str
+
+  profile_picture:
+    mandatory: False
+    type: str
+
+  first_name:
+    mandatory: False
+    type: str
+
+  last_name:
+    mandatory: False
+    type: str
+
+  email:
+    mandatory: False
+    type: str
+
+  mobile_phone:
+    mandatory: False
+    type: str
+

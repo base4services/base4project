@@ -1,0 +1,9 @@
+services:
+  - name: tenants
+    singular: tenant
+    location: src/services/tenants
+    gen:
+      - models
+      - schemas
+
+  # gen placeholder

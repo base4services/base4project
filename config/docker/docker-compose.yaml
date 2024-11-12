@@ -1,0 +1,107 @@
+x-common-configuration: &default-config
+  deploy:
+    replicas: 1
+  depends_on:
+    - redis
+  logging:
+    options:
+      max-size: "1m"
+      max-file: "3"
+  build:
+    context: .
+    dockerfile: src/config/docker/Dockerfile
+  env_file:
+    - .env
+    - .env.docker
+  volumes:
+    - logs:/var/log/bsone
+
+    # TODO: ONLY FOR DEVELOPMENT
+    - ./lib/base4:/lib/base4		# base4 need to be installed from dockerfile with -e
+    
+    - ./src:/app
+    - ./security:/app/security
+    - ./src/config/docker/start.sh:/start.sh
+
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  nginx:
+    image: nginx
+    volumes:
+      - ./src/config/docker/nginx-generated.conf:/etc/nginx/conf.d/default.conf
+
+
+    ports:
+      - 8000:80
+    depends_on:
+      - tenants
+
+    environment:
+      - NGINX_PORT=80
+
+  redis:
+    image: redis:alpine
+    hostname: redis
+    command: redis-server
+    labels:
+      NAME: redis
+
+
+  tenants:
+    <<: *default-config
+    command: python /app/service.py tenants
+
+  income_and_expenses:
+    <<: *default-config
+#    command: sleep 99999
+    command: python /app/service.py income_and_expenses
+
+  due_liabilities_and_receivables:
+    <<: *default-config
+    command: python /app/service.py due_liabilities_and_receivables
+
+  non_due_liabilities_and_receivables:
+    <<: *default-config
+    command: python /app/service.py non_due_liabilities_and_receivables
+
+  overview_of_deleted_post_receipts_by_day_location_and_op:
+    <<: *default-config
+    command: python /app/service.py overview_of_deleted_post_receipts_by_day_location_and_op
+
+  overview_pos_trans_by_days_loc_op_and_gr:
+    <<: *default-config
+    command: python /app/service.py overview_pos_trans_by_days_loc_op_and_gr
+
+  overview_pos_trans_by_days_loc_op_and_pmethod:
+    <<: *default-config
+    command: python /app/service.py overview_pos_trans_by_days_loc_op_and_pmethod
+
+  overview_of_inventory_and_prices_by_locations:
+    <<: *default-config
+    command: python /app/service.py overview_of_inventory_and_prices_by_locations
+
+  overview_of_business_account_balances:
+    <<: *default-config
+    command: python /app/service.py overview_of_business_account_balances
+
+  top_15_suppliers_for_goods_excluding_vat:
+    <<: *default-config
+    command: python /app/service.py top_15_suppliers_for_goods_excluding_vat
+
+  top_15_buyers_for_goods_value_without_vat:
+    <<: *default-config
+    command: python /app/service.py top_15_buyers_for_goods_value_without_vat
+
+  top_15_buyers_for_services_excluding_vat:
+    <<: *default-config
+    command: python /app/service.py top_15_buyers_for_services_excluding_vat
+
+  top_50_achieved_trade_margin_by_items:
+    <<: *default-config
+    command: python /app/service.py top_50_achieved_trade_margin_by_items
+    
+
+volumes:
+  logs:

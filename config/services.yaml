@@ -1,0 +1,13 @@
+general:
+  app_type: ${APPLICATION_RUN_MODE}
+  app_name: __PROJECT_NAME__
+  monolith:
+    port: 8000
+    host: 0.0.0.0
+    loop: asyncio
+    log_level: debug
+
+services:
+  - tenants:
+
+  # services placeholder

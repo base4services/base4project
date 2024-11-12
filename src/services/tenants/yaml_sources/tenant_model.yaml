@@ -1,0 +1,73 @@
+option:
+
+  __meta:
+
+    table_name: tenants_options
+    app: tenants
+
+  key:
+    field: "fields.CharField(255, null=False, unique=True)"
+
+  value:
+    field: "fields.TextField(null=True)"
+
+
+tenant:
+
+  __meta:
+
+    table_name: tenants
+    app: tenants
+
+  code:
+    field: "fields.CharField(255, null=False, unique=True)"
+
+  display_name:
+    field: "fields.CharField(255, null=False)"
+
+user:
+
+  __inherits: BaseNoTenant
+  __meta:
+
+    table_name: tenants_users
+    app: tenants
+    unique_together: ( ('tenant', 'username' ), )
+
+  tenant:
+    field: "fields.ForeignKeyField('tenants.Tenant', index=True, on_delete=tortoise.fields.base.OnDelete.RESTRICT, related_name='users')"
+
+  username:
+    field: "fields.CharField(255, null=True)"
+
+  password:
+    field: "fields.CharField(255, null=True)"
+
+  display_name:
+    field: "fields.CharField(255, null=True)"
+
+  profile_picture:
+    field: "fields.CharField(255, null=True)"
+
+  first_name:
+    field: "fields.CharField(255, null=True)"
+
+  last_name:
+    field: "fields.CharField(255, null=True)"
+
+  email:
+    field: "fields.CharField(255, null=True)"
+
+  mobile_phone:
+    field: "fields.CharField(255, null=True)"
+
+  __cache11:
+
+    __meta:
+
+      table_name: tenants_users_c11
+      app: tenants
+
+    user:
+      field: "fields.OneToOneField('tenants.User', index=True, related_name='cache11')"
+

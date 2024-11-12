@@ -1,0 +1,15 @@
+.env
+.env.docker
+.idea
+.venv
+*~
+*.pyc
+__pycache__
+lib
+id_rsa
+DEADJOE
+**/models/generated_*model.py
+**/schemas/generated_*schema.py
+**/schemas/generated_universal_tables_schema_*.py
+security/*.pem
+config/.env

@@ -1,0 +1,47 @@
+db: &db
+  port: ${DB_POSTGRES_PORT}
+  host: ${DB_POSTGRES_HOST}
+  user: ${DB_POSTGRES_USER}
+  password: ${DB_POSTGRES_PASSWORD}
+
+db_aerich: &db_aerich
+  <<: *db
+  database: ${DB_AERICH}
+
+db_tenants: &db_tenants
+  <<: *db
+  database: ${DB_TENANTS}
+
+### PLACEHOLDER: DB_CONFIG
+
+tortoise:
+  connections:
+    conn_aerich:
+      engine: 'tortoise.backends.asyncpg'
+      credentials: *db_aerich
+
+    conn_tenants:
+      engine: 'tortoise.backends.asyncpg'
+      credentials: *db_tenants
+
+
+
+### PLACEHOLDER: CONNECTIONS
+
+  apps:
+    aerich:
+      models:
+        - 'aerich.models'
+      default_connection: 'conn_aerich'
+    tenants:
+      models:
+        - 'services.tenants.models'
+      default_connection: 'conn_tenants'
+
+### PLACEHOLDER: APPS
+
+  use_tz: true
+
+  timezone: UTC
+
+# gen placeholder

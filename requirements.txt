@@ -1,0 +1,8 @@
+#-e ./lib/base4
+#-e ./lib/base4services
+# TODO: @dev-ws skloni, mora biti main
+# git+ssh://git@github.com/digital-cube/base4.git@dev-rc
+
+pillow==10.4.0
+aiosmtplib==3.0.2
+matplotlib==3.9.2
