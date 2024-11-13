@@ -8,6 +8,5 @@ general:
     log_level: debug
 
 services:
-  - tenants:
 
   # services placeholder
