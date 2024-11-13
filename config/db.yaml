@@ -8,10 +8,6 @@ db_aerich: &db_aerich
   <<: *db
   database: ${DB_AERICH}
 
-db_tenants: &db_tenants
-  <<: *db
-  database: ${DB_TENANTS}
-
 ### PLACEHOLDER: DB_CONFIG
 
 tortoise:
@@ -19,10 +15,6 @@ tortoise:
     conn_aerich:
       engine: 'tortoise.backends.asyncpg'
       credentials: *db_aerich
-
-    conn_tenants:
-      engine: 'tortoise.backends.asyncpg'
-      credentials: *db_tenants
 
 
   ### PLACEHOLDER: CONNECTIONS
@@ -32,10 +24,6 @@ tortoise:
       models:
         - 'aerich.models'
       default_connection: 'conn_aerich'
-    tenants:
-      models:
-        - 'services.tenants.models'
-      default_connection: 'conn_tenants'
 
   ### PLACEHOLDER: APPS
 
