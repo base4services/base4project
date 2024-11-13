@@ -17,8 +17,8 @@ x-common-configuration: &default-config
     - logs:/var/log/bsone
 
     # TODO: ONLY FOR DEVELOPMENT
-    - ./lib/base4:/lib/base4		# base4 need to be installed from dockerfile with -e
-    
+    - ./lib/base4:/lib/base4        # base4 need to be installed from dockerfile with -e
+
     - ./src:/app
     - ./security:/app/security
     - ./src/config/docker/start.sh:/start.sh
@@ -55,7 +55,7 @@ services:
 
   income_and_expenses:
     <<: *default-config
-#    command: sleep 99999
+    #    command: sleep 99999
     command: python /app/service.py income_and_expenses
 
   due_liabilities_and_receivables:
@@ -101,7 +101,7 @@ services:
   top_50_achieved_trade_margin_by_items:
     <<: *default-config
     command: python /app/service.py top_50_achieved_trade_margin_by_items
-    
+
 
 volumes:
   logs:
