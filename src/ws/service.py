@@ -2,9 +2,9 @@ from base4.ws.service import BaseSocketServer
 
 
 class BSOneSocketServer(BaseSocketServer):
-	def __init__(self):
-		super().__init__()
-		print("BSOneSocketServer Initialized")
+    def __init__(self):
+        super().__init__()
+        print("BSOneSocketServer Initialized")
 
 
 # https://admin.socket.io/#/servers

@@ -5,11 +5,11 @@ import pydantic
 
 
 class CRApiHeader(pydantic.BaseModel):
-	timestamp: datetime.datetime
-	# date: datetime.date
-	shop_id: str
+    timestamp: datetime.datetime
+    # date: datetime.date
+    shop_id: str
 
 
 class CRApi(pydantic.BaseModel):
-	header: CRApiHeader
-	data: List[Any]
+    header: CRApiHeader
+    data: List[Any]
