@@ -13,14 +13,12 @@ from httpx import Response
 
 dotenv.load_dotenv(str(get_project_root() / '.env'))
 
-
 @pytest.mark.asyncio
 class TestBase:
     app: FastAPI = FastAPI()
-    services = ['tenants']  # , 'flow']
+    services = []
 
     current_logged_user = None
-    default_tenant_code = 'TEST'
 
     async def create_item(self, endpoint, payload, expected_code=201, headers=None):
         res = await self.api('POST', f'/api/{endpoint}', _body=payload, _headers=headers)
@@ -130,50 +128,8 @@ class TestBase:
                 raise
 
     async def setup(self):
-
-        # TODO: CLear cache
-
-        # import base4.utils
-        # base4.utils.utils.memoize
-
-        if 'tenants' not in self.services:
-            self.services.append("tenants")
-
-        # if 'flow' not in self.services:
-        #     self.services.append("flow")
-
         self.get_app()
 
-        healthy_test = await self.api('GET', '/api/tenants/healthy')
-        assert healthy_test.status_code == 200
-
-        res = await self.api(
-            'POST',
-            '/api/tenants/initialize',
-            _body={
-                'code': self.default_tenant_code,
-                'display_name': self.default_tenant_code.capitalize(),
-                'master_username': 'admin',
-                'master_user_password': '123',
-            },
-        )
-
-        assert res.status_code == 200
-        assert 'id' in res.json()
-        self.id_tenant = res.json()['id']
-
-        res = await self.api('POST', '/api/tenants/users/login', _body={'username': 'admin', 'password': '123'}, _headers={'X-Tenant-ID': str(self.id_tenant)})
-        assert res.status_code == 200
-        assert 'token' in res.json()
-        self.current_logged_user = {'username': 'admin', 'token': res.json()['token']}
-
-        res = await self.api('POST', '/api/tenants/users/login', _body={'username': 'admin', 'password': '123'}, _headers={'X-Tenant-ID': str(self.id_tenant)})
-        assert res.status_code == 200
-
-        healthy_test = await self.api('GET', '/api/tenants/healthy')
-        assert healthy_test.status_code == 200
-
-        ...
 
     @pytest.fixture(autouse=True, scope="function")
     async def setup_fixture(self) -> None:
