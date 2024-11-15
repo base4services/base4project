@@ -4,31 +4,22 @@ db: &db
   user: ${DB_POSTGRES_USER}
   password: ${DB_POSTGRES_PASSWORD}
 
+
 db_aerich: &db_aerich
   <<: *db
   database: ${DB_AERICH}
 
-### PLACEHOLDER: DB_CONFIG
-
 tortoise:
+  use_tz: true
+  timezone: UTC
+
   connections:
     conn_aerich:
       engine: 'tortoise.backends.asyncpg'
       credentials: *db_aerich
-
-
-  ### PLACEHOLDER: CONNECTIONS
 
   apps:
     aerich:
       models:
         - 'aerich.models'
       default_connection: 'conn_aerich'
-
-  ### PLACEHOLDER: APPS
-
-  use_tz: true
-
-  timezone: UTC
-
-# gen placeholder

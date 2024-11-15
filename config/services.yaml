@@ -8,5 +8,3 @@ general:
     log_level: debug
 
 services:
-
-  # services placeholder
