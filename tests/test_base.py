@@ -130,7 +130,6 @@ class TestBase:
     async def setup(self):
         self.get_app()
 
-
     @pytest.fixture(autouse=True, scope="function")
     async def setup_fixture(self) -> None:
         """
