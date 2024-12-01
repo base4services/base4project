@@ -13,3 +13,5 @@ DEADJOE
 **/schemas/generated_universal_tables_schema_*.py
 security/*.pem
 docker-compose.yaml
+tmp
+uploads
