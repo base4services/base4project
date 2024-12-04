@@ -1,5 +1,5 @@
 import importlib
-import json
+import ujson as json
 import uuid
 from typing import Any, AnyStr, Dict, Optional
 
@@ -21,7 +21,7 @@ class TestBase:
     current_logged_user = None
 
     async def create_item(self, endpoint, payload, expected_code=201, headers=None):
-        res = await self.api('POST', f'/api/{endpoint}', _body=payload, _headers=headers)
+        res = await self.request(method='POST', url= f'/api/{endpoint}', json_data=payload, _headers=headers)
 
         assert res.status_code == expected_code
 
@@ -34,7 +34,7 @@ class TestBase:
         return res.json()
 
     async def update_item(self, endpoint, id: uuid.UUID, key, value, headers=None):
-        res = await self.api('PATCH', f'/api/{endpoint}/{id}', _body={key: value}, _headers=headers)
+        res = await self.api('PATCH', f'/api/{endpoint}/{id}', json_data={key: value}, _headers=headers)
         assert res.status_code == 200
         return res.json()
 
@@ -118,7 +118,7 @@ class TestBase:
     def get_app(self):
         for service in self.services:
             try:
-                module = importlib.import_module(f'services.{service}.api.run')
+                module = importlib.import_module(f'services.{service}.api')
                 self.app.include_router(module.router, prefix=f"/api/{service}")
             except Exception as e:
                 # try:
