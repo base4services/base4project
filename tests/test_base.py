@@ -21,7 +21,7 @@ class TestBase:
     current_logged_user = None
 
     async def create_item(self, endpoint, payload, expected_code=201, headers=None):
-        res = await self.request(method='POST', url= f'/api/{endpoint}', json_data=payload, _headers=headers)
+        res = await self.request(method='POST', url= f'/api/{endpoint}', json_data=payload, headers=headers)
 
         assert res.status_code == expected_code
 
@@ -34,12 +34,12 @@ class TestBase:
         return res.json()
 
     async def update_item(self, endpoint, id: uuid.UUID, key, value, headers=None):
-        res = await self.api('PATCH', f'/api/{endpoint}/{id}', json_data={key: value}, _headers=headers)
+        res = await self.request('PATCH', f'/api/{endpoint}/{id}', json_data={key: value}, headers=headers)
         assert res.status_code == 200
         return res.json()
 
     async def validate_item(self, endpoint: str, id: uuid.UUID, expect_valid=True):
-        res = await self.api('PATCH', f'/api/{endpoint}/{id}/validate')
+        res = await self.request('PATCH', f'/api/{endpoint}/{id}/validate')
 
         if expect_valid:
             assert res.status_code == 200
@@ -56,11 +56,11 @@ class TestBase:
         assert [key] == [x['field'] for x in validate['detail']['errors'] if x['field'] == key]
 
     async def delete_item(self, endpoint, _id: uuid.UUID):
-        res = await self.api('DELETE', f'/api/{endpoint}/{_id}')
+        res = await self.request('DELETE', f'/api/{endpoint}/{_id}')
         return res
 
     async def fetch_item_by_id(self, endpoint, _id: uuid.UUID):
-        res = await self.api('GET', f'/api/{endpoint}/{_id}')
+        res = await self.request('GET', f'/api/{endpoint}/{_id}')
         return res
 
     async def get_item_by_id(self, endpoint, _id: uuid.UUID):
@@ -121,10 +121,6 @@ class TestBase:
                 module = importlib.import_module(f'services.{service}.api')
                 self.app.include_router(module.router, prefix=f"/api/{service}")
             except Exception as e:
-                # try:
-                #     module = importlib.import_module(f'base4services.services.{service}.api')
-                #     self.app.include_router(module.router, prefix=f"/api/{service}")
-                # except Exception as e2:
                 raise
 
     async def setup(self):
@@ -132,53 +128,40 @@ class TestBase:
 
     @pytest.fixture(autouse=True, scope="function")
     async def setup_fixture(self) -> None:
-        """
-        Fixture for tests of application.
-        It will be executed everytime before each test and after.
-
-        decorator:
-                @pytest.fixture(autouse=True, scope="function")
-                        autouse (bool): If true this fixture will be executed
-                                                        brefore and after every test.
-                        scope (str): This fixture is meant for function tests.
-
-        :return: None
-        """
-
         self.app.app_services = self.services
         await startup_event(self.services)
         await self.setup()
         yield
         await shutdown_event()
 
-    async def api(self, _method: AnyStr, _endpoint: AnyStr, _body: Optional[Dict] = None, _params=None, _headers=None) -> Response | Dict:
-        _method = _method.lower()
+    async def request(self, method: str, url: str, json_data: dict = None, data: dict = None, params=None, headers={}, files=[]):
+
+        _method = method.lower()
 
         params: Dict = {
-            'url': _endpoint,
+            'url': url,
         }
 
-        if not _headers:
-            _headers = {}
+        if not headers:
+            headers = {}
 
-        params['headers'] = _headers
+        params['headers'] = headers
 
-        if 'Authorization' not in _headers:
+        if 'Authorization' not in headers:
             if self.current_logged_user and "token" in self.current_logged_user and self.current_logged_user["token"]:
-                _headers['Authorization'] = f'Bearer {self.current_logged_user["token"]}'
+                headers['Authorization'] = f'Bearer {self.current_logged_user["token"]}'
 
-        if _params:
-            params['params'] = _params
+        if params:
+            params['params'] = params
 
         if _method not in ('delete', 'get'):
 
-            if _body:
-                _body = json.loads(json.dumps(_body, default=str))
+            if json_data:
+                json_data = json.loads(json.dumps(json_data, default=str))
 
-            params['json'] = _body if _body else {}
+            params['json'] = json_data if json_data else {}
 
         async with httpx.AsyncClient(app=self.app, base_url='https://test') as client:
-            # Set the secure cookie
             client.cookies.set(
                 'token',
                 f'{self.current_logged_user["token"]}' if self.current_logged_user and "token" in self.current_logged_user else None,
