@@ -1,0 +1,78 @@
+api_handlers:
+  tenants:
+    user_logout: tenants.api.handlers.APIHandler.user_logout
+    initialize: tenants.api.handlers.APIHandler.initialize
+    session: tenants.api.handlers.APIHandler.session
+
+
+attributes:
+  time_based:
+    - name: business_hours
+      condition:
+        - from: "09:00"
+        - to: "17:00"
+
+    - name: off_hours
+      condition:
+        - from: "17:00"
+        - to: "09:00"
+
+  location_based:
+    - name: internal_network
+      condition:
+        cidr: "192.168.0.0/24"
+
+    - name: external_network
+      condition:
+        cidr: "0.0.0.0/0"
+
+  middlewares:
+    - fn_1: utilities.ac_middlewares:ac_test_middleware_true
+
+    - fn_2: utilities.ac_middlewares:ac_test_middleware_false
+
+    - fn_3: utilities.ac_middlewares:ac_test_middleware_with_params
+      params:
+        key1: 1
+        key2: 1
+      condition:
+        response: 2
+      fallback: utilities.ac_middlewares:ac_test_middleware_true
+
+    - fn_4: utilities.ac_middlewares:ac_test_middleware_with_fallback
+      params:
+        key1: 1
+        key2: 4
+      condition:
+        response: 2
+      fallback: utilities.ac_middlewares:ac_test_middleware_true
+
+
+roles:
+  __common__:
+    permissions:
+      - tenants.user_logout
+      - tenants.user_session
+
+  root:
+    inherits: __common__
+    permissions:
+      - tenants.initialize
+    attributes:
+      - location_based.internal_network
+
+  admin:
+    inherits: __common__
+    permissions:
+      - new_service.get_by_key
+      - new_service.healthy
+    attributes:
+      - time_based.business_hours
+
+  user:
+    inherits: __common__
+    permissions:
+      - user_profile.read
+      - user_profile.update
+    attributes:
+      - location_based.external_network
