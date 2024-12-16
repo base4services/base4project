@@ -3,6 +3,8 @@ api_handlers:
     user_logout: tenants.api.handlers.TenantsAPI.user_logout
     initialize: tenants.api.handlers.TenantsAPI.initialize
     session: tenants.api.handlers.TenantsAPI.session
+  nemanja:
+    healthy: nemanja.api.handlers.APIHandler.healthy
 
 middlewares:
   - fn_1: base4.base4.utilities.access_control.middlewares:ac_test_middleware_true
@@ -38,48 +40,22 @@ roles:
     rate_limit:
       calls: 100
       period: 3600  # Globalno za sve permisije u roli
-    attributes:
-      - location_based.internal_network
 
-  root:
+
+  master:
     inherits:
       - __common__
 
     permissions:
       - tenants.initialize:
-          attributes:
-            - time_based.business_hours
+          middlewares:
+            - fn_1
           rate_limit:
             calls: 10
-            period: 600  # Specifično za ovu permisiju
-
-  admin:
-    inherits:
-      - __common__
-    permissions:
-      - new_service.get_by_key
-      - new_service.healthy
-    attributes:
-      - time_based.business_hours
-
-  super_admin:
-    inherits:
-      - root
-      - admin
-    permissions:
-      - new_service.get_by_key
-      - new_service.healthy
-    attributes:
-#      - time_based.business_hours
+            period: 600
 
   user:
     inherits:
       - __common__
-    permissions:
-      - user_profile.read
-      - user_profile.update
-      - tenants.user_login:
-          middlewares:
-            - fn_1_oauth
-    attributes:
-      - location_based.external_network
+#    permissions:
+#    attributes:
