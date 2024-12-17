@@ -10,6 +10,7 @@ from base4.utilities.files import get_project_root
 from base4.utilities.service.startup import shutdown_event, startup_event
 from fastapi import FastAPI
 from httpx import Response
+import inspect
 
 dotenv.load_dotenv(str(get_project_root() / '.env'))
 
@@ -117,11 +118,14 @@ class TestBase:
 
     def get_app(self):
         for service in self.services:
-            try:
-                module = importlib.import_module(f'services.{service}.api')
-                self.app.include_router(module.router, prefix=f"/api/{service}")
-            except Exception as e:
-                raise
+            module = importlib.import_module(f'services.{service}.api.handlers')
+            for api_handler in inspect.getmembers(module):
+                try:
+                    instance = api_handler[1]
+                    if hasattr(instance, 'router'):
+                        self.app.include_router(instance.router, prefix=f"/api/{service}")
+                except Exception as e:
+                    continue
 
     async def setup(self):
         self.get_app()
