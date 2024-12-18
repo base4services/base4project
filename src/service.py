@@ -1,9 +1,10 @@
+import sys
+
 import pydash
 import uvicorn
 from base4 import configuration
 from base4.utilities.service.startup import get_service, run_server
 from fastapi import FastAPI
-import sys
 
 service: FastAPI = get_service()
 
