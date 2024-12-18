@@ -1,61 +1,68 @@
 api_handlers:
-  tenants:
-    user_logout: tenants.api.handlers.TenantsAPI.user_logout
-    initialize: tenants.api.handlers.TenantsAPI.initialize
-    session: tenants.api.handlers.TenantsAPI.session
-  nemanja:
-    healthy: nemanja.api.handlers.APIHandler.healthy
-
-middlewares:
-  - fn_1: base4.base4.utilities.access_control.middlewares:ac_test_middleware_true
 
 attributes:
-  time_based:
-    - name: business_hours
-      params:
-        - from: "10:00"
-        - to: "17:00"
-
-    - name: off_hours
-      params:
-        - from: "17:00"
-        - to: "09:00"
-
   location_based:
-    - name: internal_network
-      params:
-        cidr: "192.168.0.0/24"
-
-    - name: external_network
-      params:
-        cidr: "0.0.0.0/0"
-
-
+  - name: internal_network
+    params:
+      cidr: 192.168.0.0/24
+  - name: external_network
+    params:
+      cidr: 0.0.0.0/0
+  time_based:
+  - name: business_hours
+    params:
+    - from: '10:00'
+    - to: '17:00'
+  - name: off_hours
+    params:
+    - from: '17:00'
+    - to: 09:00
+middlewares:
+- fn_1: base4.base4.utilities.access_control.middlewares:ac_test_middleware_true
 roles:
   __common__:
+    attributes:
+    - location_based.internal_network
     permissions:
-      - tenants.user_logout
-      - tenants.user_session
-
+    - tenants.user_logout
+    - tenants.user_session
     rate_limit:
       calls: 100
-      period: 3600  # Globalno za sve permisije u roli
-
-
-  master:
+      period: 3600
+  admin:
+    attributes:
+    - time_based.business_hours
     inherits:
-      - __common__
-
+    - __common__
     permissions:
-      - tenants.initialize:
-          middlewares:
-            - fn_1
-          rate_limit:
-            calls: 10
-            period: 600
-
-  user:
+    - new_service.get_by_key
+    - new_service.healthy
+  root:
     inherits:
-      - __common__
-#    permissions:
-#    attributes:
+    - __common__
+    permissions:
+    - tenants.initialize:
+        attributes:
+        - time_based.business_hours
+        rate_limit:
+          calls: 10
+          period: 600
+  super_admin:
+    attributes: null
+    inherits:
+    - root
+    - admin
+    permissions:
+    - new_service.get_by_key
+    - new_service.healthy
+  user:
+    attributes:
+    - location_based.external_network
+    inherits:
+    - __common__
+    permissions:
+    - user_profile.read
+    - user_profile.update
+    - tenants.user_login:
+        middlewares:
+        - fn_1_oauth
