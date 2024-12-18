@@ -18,7 +18,7 @@ attributes:
         - from: '17:00'
         - to: 09:00
 middlewares:
-  - fn_1: base4.base4.utilities.access_control.middlewares:ac_test_middleware_true
+  - fn_1: base4.utilities.access_control.middlewares:ac_test_middleware_true
 roles:
   __common__:
     attributes:
@@ -34,27 +34,9 @@ roles:
       - time_based.business_hours
     inherits:
       - __common__
-    permissions:
-      - new_service.get_by_key
-      - new_service.healthy
-  root:
-    inherits:
-      - __common__
-    permissions:
-      - tenants.initialize:
-          attributes:
-            - time_based.business_hours
-          rate_limit:
-            calls: 10
-            period: 600
-  super_admin:
-    attributes: null
-    inherits:
-      - root
-      - admin
-    permissions:
-      - new_service.get_by_key
-      - new_service.healthy
+#    permissions:
+#      - new_service.get_by_key
+#      - new_service.healthy
   user:
     attributes:
       - location_based.external_network
@@ -65,4 +47,4 @@ roles:
       - user_profile.update
       - tenants.user_login:
           middlewares:
-            - fn_1_oauth
+            - fn_1
