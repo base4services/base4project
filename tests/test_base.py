@@ -143,46 +143,37 @@ class TestBase:
         yield
         await shutdown_event()
 
-    async def request(self, method: str, url: str, json_data: dict = None, data: dict = None, params=None, headers={}, files=[]):
-
+    async def request(self, method: str, url: str, json_data: dict = None, data: dict = None, params={}, headers={}, files=[]):
         _method = method.lower()
-
-        params: Dict = {
-            'url': url,
-        }
-
+        
         if not headers:
             headers = {}
-
-        params['headers'] = headers
-
+        
         if 'Authorization' not in headers:
             if self.current_logged_user and "token" in self.current_logged_user and self.current_logged_user["token"]:
                 headers['Authorization'] = f'Bearer {self.current_logged_user["token"]}'
-
-        if params:
-            params['params'] = params
-
+        
         if _method not in ('delete', 'get'):
-
             if json_data:
                 json_data = json.loads(json.dumps(json_data, default=str))
-
-            params['json'] = json_data if json_data else {}
-
+                params['json'] = json_data if json_data else {}
+            
+        params['url'] = url
+        params['headers'] = headers
+        
         async with httpx.AsyncClient(app=self.app, base_url='https://test') as client:
             client.cookies.set(
                 'token',
                 f'{self.current_logged_user["token"]}' if self.current_logged_user and "token" in self.current_logged_user else None,
             )
             func = getattr(client, _method, None)
-
+            
             if not func:
                 raise Exception(f'Invalid method: {_method}')
-
+            
             try:
                 response = await func(**params)
             except Exception as e:
                 raise
-
+        
         return response
