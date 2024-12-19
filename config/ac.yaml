@@ -27,12 +27,11 @@ roles:
       - tenants.user_logout
       - tenants.user_session
     rate_limit:
-      calls: 100
+      calls: 1000
       period: 3600
       
   __common__:
     inherits:
-      - __common__
       - __all_services__
 #    attributes:
 #      - location_based.internal_network
@@ -46,6 +45,7 @@ roles:
 #    permissions:
 #      - new_service.get_by_key
 #      - new_service.healthy
+  
   user:
     attributes:
       - location_based.external_network
