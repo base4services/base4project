@@ -11,6 +11,7 @@ from base4.utilities.files import get_project_root
 from base4.utilities.service.startup import shutdown_event, startup_event
 from fastapi import FastAPI
 from httpx import Response
+from base4.utilities.db.async_redis import get_redis
 
 project_root = get_project_root()
 
@@ -133,6 +134,8 @@ class TestBase:
                                 except Exception as e:
                                     continue
     async def setup(self):
+        async with get_redis() as redis_client:
+            await redis_client.flushall()
         self.get_app()
 
     @pytest.fixture(autouse=True, scope="function")
@@ -142,8 +145,16 @@ class TestBase:
         await self.setup()
         yield
         await shutdown_event()
-
-    async def request(self, method: str, url: str, json_data: dict = None, data: dict = None, params={}, headers={}, files=[]):
+    
+    async def request(self, method: str, url: str, json_data: dict = None, params={}, model_data: pydantic.BaseModel = None,
+                      headers: Dict = {}, files=[], response_format_schema=None) -> httpx.Response:
+        
+        self.last_response = None
+        self.last_status_code = None
+        
+        if model_data and json_data:
+            raise Exception('You can only pass one of model_data or json_data')
+        
         _method = method.lower()
         
         if not headers:
@@ -157,7 +168,12 @@ class TestBase:
             if json_data:
                 json_data = json.loads(json.dumps(json_data, default=str))
                 params['json'] = json_data if json_data else {}
-            
+        else:
+            try:
+                del params['json']
+            except:
+                pass
+        
         params['url'] = url
         params['headers'] = headers
         
@@ -167,7 +183,6 @@ class TestBase:
                 f'{self.current_logged_user["token"]}' if self.current_logged_user and "token" in self.current_logged_user else None,
             )
             func = getattr(client, _method, None)
-            
             if not func:
                 raise Exception(f'Invalid method: {_method}')
             
@@ -175,5 +190,15 @@ class TestBase:
                 response = await func(**params)
             except Exception as e:
                 raise
+            
+            self.last_status_code = response.status_code
+            self.last_response = response.json()
+            
+            if response.status_code in (200, 201):
+                if response_format_schema:
+                    resp = response_format_schema.parse_obj(response.json())
+                    assert resp
+                    assert resp.model_dump(mode='json') == response.json()
+                    self.last_response = resp
         
         return response
