@@ -4,14 +4,14 @@ import uuid
 from typing import Any, AnyStr, Dict, Optional
 import pydantic
 import dotenv
-import os
-import inspect
 import httpx
 import pytest
 from base4.utilities.files import get_project_root
 from base4.utilities.service.startup import shutdown_event, startup_event
 from fastapi import FastAPI
 from httpx import Response
+import inspect
+import os
 
 dotenv.load_dotenv(str(get_project_root() / '.env'))
 project_root = get_project_root()
