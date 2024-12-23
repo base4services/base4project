@@ -1,59 +1,64 @@
 api_handlers:
+  tenants:
+    activate: services.tenants.api.handlers.APIHandler.activate
+    check_password_strength: services.tenants.api.handlers.APIHandler.check_password_strength
+    forgot_password: services.tenants.api.handlers.APIHandler.forgot_password
+    healthy: services.tenants.api.handlers.APIHandler.healthy
+    initialize: services.tenants.api.handlers.APIHandler.initialize
+    login: services.tenants.api.handlers.APIHandler.login
+    register: services.tenants.api.handlers.APIHandler.register
+    reset_password: services.tenants.api.handlers.APIHandler.reset_password
+    session: services.tenants.api.handlers.APIHandler.session
 
 attributes:
   location_based:
-    - name: internal_network
-      params:
-        cidr: 192.168.0.0/24
-    - name: external_network
-      params:
-        cidr: 0.0.0.0/0
+  - name: internal_network
+    params:
+      cidr: 192.168.0.0/24
+  - name: external_network
+    params:
+      cidr: 0.0.0.0/0
   time_based:
-    - name: business_hours
-      params:
-        - from: '10:00'
-        - to: '17:00'
-    - name: off_hours
-      params:
-        - from: '17:00'
-        - to: 09:00
+  - name: business_hours
+    params:
+    - from: '10:00'
+    - to: '17:00'
+  - name: off_hours
+    params:
+    - from: '17:00'
+    - to: 09:00
 
 middlewares:
-  - fn_1: base4.utilities.access_control.middlewares:ac_test_middleware_true
+- fn_1: base4.base4.utilities.access_control.middlewares:ac_test_middleware_true
 
 roles:
   __all_services__:
     permissions:
-      - tenants.user_logout
-      - tenants.user_session
-    rate_limit:
-      calls: 1000
-      period: 3600
-      
+    - tenants.activate
+    - tenants.check_password_strength
+    - tenants.forgot_password
+    - tenants.healthy
+    - tenants.initialize
+    - tenants.register
+    - tenants.reset_password
+    - tenants.session
+
   __common__:
-    inherits:
-      - __all_services__
 #    attributes:
-#      - location_based.internal_network
-  
-  
-  admin:
-    attributes:
-      - time_based.business_hours
-    inherits:
-      - __common__
-#    permissions:
-#      - new_service.get_by_key
-#      - new_service.healthy
-  
-  user:
-    attributes:
-      - location_based.external_network
-    inherits:
-      - __common__
+    #- location_based.internal_network
     permissions:
-      - user_profile.read
-      - user_profile.update
-      - tenants.user_login:
-          middlewares:
-            - fn_1
+    - tenants.user_logout
+    - tenants.user_session
+    rate_limit:
+      calls: 100
+      period: 3600
+
+  master:
+    inherits:
+    - __common__
+    - __all_services__
+
+  user:
+    inherits:
+    - __common__
+    - __all_services__

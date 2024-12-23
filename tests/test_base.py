@@ -1,19 +1,15 @@
 import importlib
-import inspect
+import ujson as json
 import uuid
 from typing import Any, AnyStr, Dict, Optional
-import os
+import pydantic
 import dotenv
 import httpx
 import pytest
-import ujson as json
 from base4.utilities.files import get_project_root
 from base4.utilities.service.startup import shutdown_event, startup_event
 from fastapi import FastAPI
 from httpx import Response
-from base4.utilities.db.async_redis import get_redis
-
-project_root = get_project_root()
 
 dotenv.load_dotenv(str(get_project_root() / '.env'))
 
@@ -134,8 +130,6 @@ class TestBase:
                                 except Exception as e:
                                     continue
     async def setup(self):
-        async with get_redis() as redis_client:
-            await redis_client.flushall()
         self.get_app()
 
     @pytest.fixture(autouse=True, scope="function")
@@ -145,38 +139,44 @@ class TestBase:
         await self.setup()
         yield
         await shutdown_event()
-    
+
     async def request(self, method: str, url: str, json_data: dict = None, params={}, model_data: pydantic.BaseModel = None,
                       headers: Dict = {}, files=[], response_format_schema=None) -> httpx.Response:
-        
+
         self.last_response = None
         self.last_status_code = None
-        
+
         if model_data and json_data:
             raise Exception('You can only pass one of model_data or json_data')
-        
+
         _method = method.lower()
-        
+
         if not headers:
             headers = {}
-        
+
         if 'Authorization' not in headers:
             if self.current_logged_user and "token" in self.current_logged_user and self.current_logged_user["token"]:
                 headers['Authorization'] = f'Bearer {self.current_logged_user["token"]}'
-        
+
         if _method not in ('delete', 'get'):
+
+            if model_data:
+                json_data = model_data.model_dump(mode='json')
+            else:
+                if json_data:
+                    json_data = json.loads(json.dumps(json_data, default=str))
+
             if json_data:
-                json_data = json.loads(json.dumps(json_data, default=str))
                 params['json'] = json_data if json_data else {}
         else:
             try:
                 del params['json']
             except:
                 pass
-        
+
         params['url'] = url
         params['headers'] = headers
-        
+
         async with httpx.AsyncClient(app=self.app, base_url='https://test') as client:
             client.cookies.set(
                 'token',
@@ -185,20 +185,20 @@ class TestBase:
             func = getattr(client, _method, None)
             if not func:
                 raise Exception(f'Invalid method: {_method}')
-            
+
             try:
                 response = await func(**params)
             except Exception as e:
                 raise
-            
+
             self.last_status_code = response.status_code
             self.last_response = response.json()
-            
+
             if response.status_code in (200, 201):
                 if response_format_schema:
                     resp = response_format_schema.parse_obj(response.json())
                     assert resp
                     assert resp.model_dump(mode='json') == response.json()
                     self.last_response = resp
-        
+
         return response
