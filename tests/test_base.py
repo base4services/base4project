@@ -4,6 +4,8 @@ import uuid
 from typing import Any, AnyStr, Dict, Optional
 import pydantic
 import dotenv
+import os
+import inspect
 import httpx
 import pytest
 from base4.utilities.files import get_project_root
@@ -12,6 +14,7 @@ from fastapi import FastAPI
 from httpx import Response
 
 dotenv.load_dotenv(str(get_project_root() / '.env'))
+project_root = get_project_root()
 
 @pytest.mark.asyncio
 class TestBase:
