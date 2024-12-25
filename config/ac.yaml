@@ -41,7 +41,10 @@ roles:
     - tenants.initialize
     - tenants.register
     - tenants.reset_password
-    - tenants.session
+    - tenants.me
+    - tenants.change_own_attribute
+    - tenants.change_password
+    - tenants.logout
 
   __common__:
 #    attributes:
