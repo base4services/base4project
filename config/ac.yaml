@@ -34,17 +34,7 @@ middlewares:
 roles:
   __all_services__:
     permissions:
-    - tenants.activate
-    - tenants.check_password_strength
-    - tenants.forgot_password
-    - tenants.healthy
-    - tenants.initialize
-    - tenants.register
-    - tenants.reset_password
-    - tenants.me
-    - tenants.change_own_attribute
-    - tenants.change_password
-    - tenants.logout
+    - tenants.*
 
   __common__:
 #    attributes:
