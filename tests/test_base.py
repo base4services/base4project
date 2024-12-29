@@ -9,7 +9,7 @@ import pytest
 from base4.utilities.files import get_project_root
 from base4.utilities.service.startup import shutdown_event, startup_event
 from fastapi import FastAPI
-from httpx import Response
+from httpx import Response, ASGITransport
 import inspect
 import os
 
@@ -180,7 +180,7 @@ class TestBase:
         params['url'] = url
         params['headers'] = headers
 
-        async with httpx.AsyncClient(app=self.app, base_url='https://test') as client:
+        async with httpx.AsyncClient(transport=ASGITransport(app=self.app), base_url='https://test') as client:
             client.cookies.set(
                 'token',
                 f'{self.current_logged_user["token"]}' if self.current_logged_user and "token" in self.current_logged_user else None,
@@ -199,7 +199,7 @@ class TestBase:
 
             if response.status_code in (200, 201):
                 if response_format_schema:
-                    resp = response_format_schema.parse_obj(response.json())
+                    resp = response_format_schema.model_validate(response.json())
                     assert resp
                     assert resp.model_dump(mode='json') == response.json()
                     self.last_response = resp
