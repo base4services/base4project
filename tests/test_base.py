@@ -129,9 +129,13 @@ class TestBase:
                                 try:
                                     if hasattr(api_handler[1], 'router'):
                                         obj = api_handler[1]
-                                        self.app.include_router(obj.router, prefix=f"/api/{service}")
+                                        try:
+                                            self.app.include_router(obj.router, prefix=obj.router.prefix)
+                                        except Exception as e:
+                                            self.app.include_router(obj.router, prefix=f"/api/{service}")
                                 except Exception as e:
                                     continue
+
     async def setup(self):
         self.get_app()
 
